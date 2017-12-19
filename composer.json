@@ -1,0 +1,21 @@
+{
+  "name": "biteit/tracy-slack-logger",
+  "description": "Integrates Tracy Logger to your Slack",
+  "minimum-stability": "dev",
+  "license": "proprietary",
+  "authors": [
+    {
+      "name": "Radek Boszczyk",
+      "email": "radek.boszczyk@gmail.com"
+    }
+  ],
+  "require": {
+    "tracy/tracy": "2.4.10",
+    "php": ">=5.6.0"
+  },
+  "autoload": {
+      "psr-0": {
+          "BiteIT": "src/"
+      }
+  }
+}
