@@ -6,14 +6,28 @@ use Tracy\ILogger;
 class TracySlackLogger implements ILogger {
 
     protected $webhookURL;
+    protected $reportedPriorities = [ILogger::ERROR, ILogger::CRITICAL, ILogger::EXCEPTION];
 
     public function __construct($webhookURL)
     {
         $this->webhookURL = $webhookURL;
     }
 
+    public function setReportingLevels($levels){
+        $this->reportedPriorities = (array) $levels;
+    }
+
     function log($value, $priority = self::INFO)
     {
+        if($this->reportedPriorities)
+        {
+            if (!in_array($priority, $this->reportedPriorities))
+                return;
+
+            if (!in_array(ILogger::INFO, $this->reportedPriorities) && strpos($value, 'PHP Notice') !== false)
+                return;
+        }
+
         $message = array(
             'payload' => json_encode(array(
                 'text' => "*{$priority}* on *{$_SERVER['HTTP_HOST']}*: $value"
