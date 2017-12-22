@@ -17,23 +17,39 @@ class TracySlackLogger implements ILogger {
         $this->webhookURL = $webhookURL;
     }
 
+    /**
+     * @param $levels
+     * @return $this
+     */
     public function setReportingLevels($levels){
         $this->reportedPriorities = (array) $levels;
         return $this;
     }
 
+    /**
+     * @param $iconURL
+     * @return $this
+     */
     public function setIconURL($iconURL){
         $this->iconEmoji = null;
         $this->iconURL = $iconURL;
         return $this;
     }
 
+    /**
+     * @param $emoji
+     * @return $this
+     */
     public function setIconEmoji($emoji){
         $this->iconEmoji = $emoji;
         $this->iconURL = null;
         return $this;
     }
 
+    /**
+     * @param $username
+     * @return $this
+     */
     public function setUsername($username){
         $this->username = $username;
         return $this;
