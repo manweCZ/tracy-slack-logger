@@ -7,6 +7,10 @@ class TracySlackLogger implements ILogger {
 
     protected $webhookURL;
     protected $reportedPriorities = [ILogger::ERROR, ILogger::CRITICAL, ILogger::EXCEPTION];
+    protected $iconURL;
+    protected $iconEmoji;
+    protected $username;
+
 
     public function __construct($webhookURL)
     {
@@ -15,6 +19,24 @@ class TracySlackLogger implements ILogger {
 
     public function setReportingLevels($levels){
         $this->reportedPriorities = (array) $levels;
+        return $this;
+    }
+
+    public function setIconURL($iconURL){
+        $this->iconEmoji = null;
+        $this->iconURL = $iconURL;
+        return $this;
+    }
+
+    public function setIconEmoji($emoji){
+        $this->iconEmoji = $emoji;
+        $this->iconURL = null;
+        return $this;
+    }
+
+    public function setUsername($username){
+        $this->username = $username;
+        return $this;
     }
 
     function log($value, $priority = self::INFO)
@@ -28,10 +50,17 @@ class TracySlackLogger implements ILogger {
                 return;
         }
 
+        $payload['text'] = "*{$priority}* on *{$_SERVER['HTTP_HOST']}*: $value";
+        if($this->username)
+            $payload['username'] = $this->username;
+        if($this->iconURL)
+            $payload['icon_url'] = $this->iconURL;
+        if($this->iconEmoji)
+            $payload['icon_emoji'] = $this->iconEmoji;
+
         $message = array(
-            'payload' => json_encode(array(
-                'text' => "*{$priority}* on *{$_SERVER['HTTP_HOST']}*: $value"
-        )));
+            'payload' => json_encode($payload)
+        );
         // Use curl to send your message
         try {
             if (ini_get('allow_url_fopen')) {
