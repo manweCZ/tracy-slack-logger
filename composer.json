@@ -2,7 +2,7 @@
   "name": "biteit/tracy-slack-logger",
   "description": "Integrates Tracy Logger to your Slack",
   "minimum-stability": "dev",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "license": "MIT",
   "authors": [
     {
