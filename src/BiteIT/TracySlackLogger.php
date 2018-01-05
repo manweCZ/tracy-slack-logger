@@ -57,6 +57,10 @@ class TracySlackLogger implements ILogger {
 
     function log($value, $priority = self::INFO)
     {
+        if(is_array($value)){
+            $value = implode(' ', $value);
+        }
+
         if($this->reportedPriorities)
         {
             if (!in_array($priority, $this->reportedPriorities))
