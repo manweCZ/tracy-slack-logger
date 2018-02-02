@@ -14,7 +14,7 @@ class TracySlackLogger extends Logger {
     protected $slackUsername;
     protected $useFileLoggerAsWell = true;
 
-    public function __construct($webhookURL, $useDefaultLogger = true)
+    public function __construct($webhookURL, $useDefaultLogger = false)
     {
         parent::__construct(Debugger::$logDirectory, Debugger::$email, Debugger::getBlueScreen());
         $this->slackWebhookURL = $webhookURL;
