@@ -1,20 +1,29 @@
 <?php
 namespace BiteIT;
 
+use Tracy\Debugger;
 use Tracy\ILogger;
+use Tracy\Logger;
 
-class TracySlackLogger implements ILogger {
+class TracySlackLogger extends Logger {
 
-    protected $webhookURL;
+    protected $slackWebhookURL;
     protected $reportedPriorities = [ILogger::ERROR, ILogger::CRITICAL, ILogger::EXCEPTION];
-    protected $iconURL;
-    protected $iconEmoji;
-    protected $username;
+    protected $slackIconURL;
+    protected $slackIconEmoji;
+    protected $slackUsername;
+    protected $useFileLoggerAsWell = true;
 
-
-    public function __construct($webhookURL)
+    public function __construct($webhookURL, $useDefaultLogger = true)
     {
-        $this->webhookURL = $webhookURL;
+        parent::__construct(Debugger::$logDirectory, Debugger::$email, Debugger::getBlueScreen());
+        $this->slackWebhookURL = $webhookURL;
+        $this->useFileLoggerAsWell = $useDefaultLogger;
+    }
+
+    public function addReportingLevel($level){
+        $this->reportedPriorities[] = $level;
+        $this->reportedPriorities = array_unique($this->reportedPriorities);
     }
 
     /**
@@ -27,12 +36,12 @@ class TracySlackLogger implements ILogger {
     }
 
     /**
-     * @param $iconURL
+     * @param $slackIconURL
      * @return $this
      */
-    public function setIconURL($iconURL){
-        $this->iconEmoji = null;
-        $this->iconURL = $iconURL;
+    public function setSlackIconURL($slackIconURL){
+        $this->slackIconEmoji = null;
+        $this->slackIconURL = $slackIconURL;
         return $this;
     }
 
@@ -40,18 +49,18 @@ class TracySlackLogger implements ILogger {
      * @param $emoji
      * @return $this
      */
-    public function setIconEmoji($emoji){
-        $this->iconEmoji = $emoji;
-        $this->iconURL = null;
+    public function setSlackIconEmoji($emoji){
+        $this->slackIconEmoji = $emoji;
+        $this->slackIconURL = null;
         return $this;
     }
 
     /**
-     * @param $username
+     * @param $slackUsername
      * @return $this
      */
-    public function setUsername($username){
-        $this->username = $username;
+    public function setSlackUsername($slackUsername){
+        $this->slackUsername = $slackUsername;
         return $this;
     }
 
@@ -59,6 +68,11 @@ class TracySlackLogger implements ILogger {
     {
         if(is_array($value)){
             $value = implode(' ', $value);
+        }
+
+        if($this->useFileLoggerAsWell)
+        {
+            parent::log($value, $priority);
         }
 
         if($this->reportedPriorities)
@@ -70,13 +84,15 @@ class TracySlackLogger implements ILogger {
                 return;
         }
 
-        $payload['text'] = "*{$priority}* on *{$_SERVER['HTTP_HOST']}*: $value";
-        if($this->username)
-            $payload['username'] = $this->username;
-        if($this->iconURL)
-            $payload['icon_url'] = $this->iconURL;
-        if($this->iconEmoji)
-            $payload['icon_emoji'] = $this->iconEmoji;
+        $url = $_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'];
+
+        $payload['text'] = "*{$priority}* on *{$_SERVER['HTTP_HOST']}* (URL: $url): $value";
+        if($this->slackUsername)
+            $payload['username'] = $this->slackUsername;
+        if($this->slackIconURL)
+            $payload['icon_url'] = $this->slackIconURL;
+        if($this->slackIconEmoji)
+            $payload['icon_emoji'] = $this->slackIconEmoji;
 
         $message = array(
             'payload' => json_encode($payload)
@@ -92,10 +108,12 @@ class TracySlackLogger implements ILogger {
         catch (\Exception $e){
             echo 'Unable to use either file_get_conents nor curl';
         }
+
+
     }
 
     protected function sendByCurl($message){
-        $c = curl_init($this->webhookURL);
+        $c = curl_init($this->slackWebhookURL);
         curl_setopt($c, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($c, CURLOPT_POST, true);
         curl_setopt($c, CURLOPT_POSTFIELDS, $message);
@@ -121,7 +139,7 @@ class TracySlackLogger implements ILogger {
 
         $context  = stream_context_create($opts);
 
-        $result = file_get_contents($this->webhookURL, false, $context);
+        $result = file_get_contents($this->slackWebhookURL, false, $context);
         return $result;
     }
 }
