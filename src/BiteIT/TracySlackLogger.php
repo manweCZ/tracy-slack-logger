@@ -89,11 +89,17 @@ class TracySlackLogger extends Logger {
         }
 
         if($_SERVER['HTTP_HOST'])
-            $url = $_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'];
+        {
+            $url = $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+            $host = $_SERVER['HTTP_HOST'];
+        }
         else
+        {
             $url = $_SERVER['argv'][0];
+            $host = 'CLI interpreter';
+        }
 
-        $text = "*{$priority}* on *{$_SERVER['HTTP_HOST']}* (URL: $url): $value";
+        $text = "*{$priority}* on *{$host}* (URL: $url): $value";
         $this->message->setText($text);
 
         try{
