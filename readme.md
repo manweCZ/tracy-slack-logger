@@ -7,7 +7,7 @@ Quick integration for Tracy Debugging panel for Slack.
 ```php
 $logger = new \BiteIT\TracySlackLogger('YOUR_HOOK_URL');
 \Tracy\Debugger::$productionMode = true;
-\Tracy\Debugger::setLogger( $logger )
+\Tracy\Debugger::setLogger( $logger );
 ```
 
 Now whenever an error or exception occures on your website, your selected Slack Channel will be notified.
