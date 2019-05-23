@@ -1,7 +1,7 @@
 {
   "name": "biteit/tracy-slack-logger",
   "description": "Integrates Tracy Logger to your Slack",
-  "minimum-stability": "dev",
+  "minimum-stability": "stable",
   "version": "0.4.2",
   "license": "MIT",
   "authors": [
@@ -13,7 +13,7 @@
   "require": {
     "tracy/tracy": "2.4.10",
     "php": ">=5.6.0",
-    "biteit/simple-slack-messenger": "dev-master"
+    "biteit/simple-slack-messenger": "^0.2"
   },
   "autoload": {
       "psr-0": {
