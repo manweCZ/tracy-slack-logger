@@ -19,3 +19,10 @@ $logger->setReportingLevels( [ ILogger::INFO ] );
 
 If you want to report ALL priorities, use an empty array for the method.
 By default, the TracySlackLogger notifies `ILogger::ERROR`, `ILogger::CRITICAL` and `ILogger::EXCEPTION` errors. 
+
+If you want to enable or disable advanced information in slack message you can use these methods.
+
+```php
+$logger->setEnabledMessageData([\BiteIT\TracySlackLogger::MESSAGE_ALL]);
+$logger->setDisabledMessageData(\BiteIT\TracySlackLogger::MESSAGE_IP);
+```
