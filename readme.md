@@ -26,3 +26,11 @@ If you want to enable or disable advanced information in slack message you can u
 $logger->setEnabledMessageData([\BiteIT\TracySlackLogger::MESSAGE_ALL]);
 $logger->setDisabledMessageData(\BiteIT\TracySlackLogger::MESSAGE_IP);
 ```
+
+If you want to add custom data to your messages, you can do so by using custom messages callback (added in v 0.5).
+Message will be inserted before error description.
+```php
+$logger->addCustomMessageCallback(function() use ($myDependencies){
+    return "*Logged user*: {$myDependencies->getLoggedUser()->getName()}";
+});
+```
