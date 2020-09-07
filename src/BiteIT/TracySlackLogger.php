@@ -14,11 +14,7 @@ class TracySlackLogger extends Logger
     const MESSAGE_USER_AGENT = 10;
 
 
-    protected $slackWebhookURL;
     protected $reportedPriorities = [ILogger::ERROR, ILogger::CRITICAL, ILogger::EXCEPTION];
-    protected $slackIconURL;
-    protected $slackIconEmoji;
-    protected $slackUsername;
     protected $useFileLoggerAsWell = true;
 
     protected $enabledMessageData = [TracySlackLogger::MESSAGE_ALL];
@@ -26,6 +22,8 @@ class TracySlackLogger extends Logger
 
     protected $messenger = null;
     protected $message = null;
+
+    protected $customMessagesCallbacks = [];
 
     public function __construct($webhookURL, $useDefaultLogger = false)
     {
@@ -120,6 +118,12 @@ class TracySlackLogger extends Logger
         if ($this->isMessageDataAllowed(static::MESSAGE_USER_AGENT) && isset($_SERVER['HTTP_USER_AGENT']))
             $sentences[] = "*User agent*: " . $_SERVER['HTTP_USER_AGENT'];
 
+        foreach ($this->customMessagesCallbacks as $callback){
+            $sentence = call_user_func($callback);
+            if($sentence)
+                $sentences[] = $sentence;
+        }
+
         $sentences[] = "*Description*:\n$value";
 
         $text = implode("\n", $sentences);
@@ -169,5 +173,9 @@ class TracySlackLogger extends Logger
     {
         return (in_array($type, $this->enabledMessageData) || in_array(static::MESSAGE_ALL, $this->enabledMessageData)) &&
             (!in_array($type, $this->disabledMessageData) && !in_array(static::MESSAGE_ALL, $this->disabledMessageData));
+    }
+
+    public function addCustomMessageCallback(callable $callback){
+        $this->customMessagesCallbacks[] = $callback;
     }
 }
