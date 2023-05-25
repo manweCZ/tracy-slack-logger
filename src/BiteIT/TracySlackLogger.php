@@ -25,6 +25,9 @@ class TracySlackLogger extends Logger
 
     protected $customMessagesCallbacks = [];
 
+    protected $maxNumberOfSentErrors = 3;
+    protected $currentNumberOfSentErrors = 0;
+
     public function __construct($webhookURL, $useDefaultLogger = false)
     {
         parent::__construct(Debugger::$logDirectory, Debugger::$email, Debugger::getBlueScreen());
@@ -99,9 +102,15 @@ class TracySlackLogger extends Logger
                 return;
         }
 
+        if ($this->currentNumberOfSentErrors > $this->maxNumberOfSentErrors) {
+            return;
+        }
+
         if ($_SERVER['HTTP_HOST']) {
             $url = $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
-            $host = $_SERVER['HTTP_HOST'];
+            $isHttps = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] || isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443;
+
+            $host = ($isHttps ? 'https://' : 'http://').$_SERVER['HTTP_HOST'];
         } else {
             $url = $_SERVER['argv'][0];
             $host = 'CLI interpreter';
@@ -118,9 +127,9 @@ class TracySlackLogger extends Logger
         if ($this->isMessageDataAllowed(static::MESSAGE_USER_AGENT) && isset($_SERVER['HTTP_USER_AGENT']))
             $sentences[] = "*User agent*: " . $_SERVER['HTTP_USER_AGENT'];
 
-        foreach ($this->customMessagesCallbacks as $callback){
+        foreach ($this->customMessagesCallbacks as $callback) {
             $sentence = call_user_func($callback);
-            if($sentence)
+            if ($sentence)
                 $sentences[] = $sentence;
         }
 
@@ -131,6 +140,7 @@ class TracySlackLogger extends Logger
 
         try {
             $this->messenger->sendSimpleMessage($this->message);
+            $this->currentNumberOfSentErrors++;
         } catch (SimpleSlackException $exception) {
             throw $exception;
         }
@@ -175,7 +185,13 @@ class TracySlackLogger extends Logger
             (!in_array($type, $this->disabledMessageData) && !in_array(static::MESSAGE_ALL, $this->disabledMessageData));
     }
 
-    public function addCustomMessageCallback(callable $callback){
+    public function addCustomMessageCallback(callable $callback)
+    {
         $this->customMessagesCallbacks[] = $callback;
+    }
+
+    public function setMaximumNumberOfSentErrors(int $number)
+    {
+        $this->maxNumberOfSentErrors = $number;
     }
 }
